@@ -1,0 +1,13 @@
+model_threshold,category,n_in_test,recall
+Isolation Forest | default,consumption,224,0.594
+Isolation Forest | default,recipe,83,0.373
+Isolation Forest | default,none (false-positive rate),4182,0.029
+Isolation Forest | best-F1,consumption,224,0.652
+Isolation Forest | best-F1,recipe,83,0.53
+Isolation Forest | best-F1,none (false-positive rate),4182,0.044
+Autoencoder | default,consumption,224,0.232
+Autoencoder | default,recipe,83,0.133
+Autoencoder | default,none (false-positive rate),4182,0.056
+Autoencoder | best-F1,consumption,224,0.46
+Autoencoder | best-F1,recipe,83,0.627
+Autoencoder | best-F1,none (false-positive rate),4182,0.161
