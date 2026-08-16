@@ -1,0 +1,17 @@
+# Real, row-level hotel operational data must never be committed here,
+# even though this repository is currently private. Only aggregate result
+# tables (precision/recall/F1 summaries) are safe to publish.
+augmented_real_dataset.csv
+real_dataset.csv
+real_dataset_v2.csv
+*_shap_summary*.txt
+mapping.csv
+mapping_privado*.csv
+node_modules/
+
+# RQ2 chain-event-registration outputs: real article codes, quantities,
+# dates and z-scores per event -- generated locally by the scripts here,
+# never committed.
+flagged_events_augmented.csv
+events_to_register.json
+invoke_register_events.sh
