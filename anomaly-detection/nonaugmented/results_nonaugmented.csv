@@ -1,0 +1,4 @@
+modelo,protocolo,pr_auc,base_rate,lift,precision,precision_ic95,recall,recall_ic95,f1,linhas_sinalizadas
+Isolation Forest,hold-out temporal,0.0629,0.0241,2.61,0.0763,"[0.034, 0.124]",0.101,"[0.048, 0.165]",0.087,131
+Autoencoder,hold-out temporal,0.0392,0.0241,1.62,0.0481,"[0.026, 0.072]",0.1515,"[0.082, 0.225]",0.073,312
+Isolation Forest,10 splits aleatorios,0.1068,,4.4,,,,,,
