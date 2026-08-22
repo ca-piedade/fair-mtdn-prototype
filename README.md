@@ -7,6 +7,8 @@ Supplementary code referenced in **Annex D** of the dissertation (Carla Alexandr
 ```
 prototype/
 ├── anomaly-detection/          AI layer — RQ1 evaluation (Isolation Forest vs. Autoencoder)
+│   └── nonaugmented/           RQ1 direct evaluation on the unaugmented operational record (Section 4.7.1)
+├── data-crosscheck/            POS × recipe-sheet × ERP reconciliation (Section 3.1.3)
 ├── chain-event-registration/   RQ2 — registers RQ1's flagged test-set events on Fabric
 ├── dlt-simulation/              DLT layer — throughput/volume simulation (ICDLT 2026 paper, Section 5)
 ├── chaincode/fnb-trust/         Hyperledger Fabric chaincode (StockLot + RecipeGovernance contracts)
@@ -15,7 +17,7 @@ prototype/
 
 ### `anomaly-detection/`
 
-The primary RQ1 evaluation (Table 4.3; Sections 3.1.3 / 4.5) runs on an **augmented real-data evaluation set**: the real substrate is 3,705 confirmed POS–ERP consumption discrepancies (real articles, real quantities), into which controlled, calibrated field-level perturbations are injected (isolated "consumption" anomalies and systematic per-article "recipe" anomalies), each grounded in that article's own real historical mean/std. Two earlier direct attempts to evaluate on the raw real discrepancy log were tried and discarded (circular labels; near-base-rate single-source features) — this augmented approach is what is actually reported in the dissertation.
+The primary RQ1 evaluation (Table 4.3; Sections 3.1.3 / 4.5) runs on an **augmented real-data evaluation set**: the real substrate is 3,705 confirmed POS–ERP consumption discrepancies (real articles, real quantities), into which controlled, calibrated field-level perturbations are injected (isolated "consumption" anomalies and systematic per-article "recipe" anomalies), each grounded in that article's own real historical mean/std. Two earlier direct attempts to evaluate on the raw real discrepancy log were tried and discarded (circular labels; near-base-rate single-source features). A third, methodologically sound direct evaluation was subsequently built on the full operational record and **is** reported, in Section 4.7.1 — see [`anomaly-detection/nonaugmented/`](#anomaly-detectionnonaugmented) below. The augmented set remains the primary RQ1 evaluation (Section 4.7.2).
 
 Pipeline:
 ```bash
@@ -28,6 +30,43 @@ python3 evaluate_anomaly_detection_robustness.py # 10-split variance + per-categ
 Reported result (Isolation Forest, mean over 10 random splits): **precision 0.578 ± 0.029, recall 0.576 ± 0.029** — below the 0.80 target set in Chapter 1, but far above the near-random performance of the two discarded direct attempts. See `RQ1_augmented_results.csv` (canonical single-split figures), `robustness_variance_results.csv` (10-split mean/std), and `robustness_per_category_recall.csv` (recall by anomaly type).
 
 **Note on inputs:** `build_augmented_real_dataset.py` requires two real source files (real consumption export + Fichas Técnicas export) that are **not included in this repository** — they contain row-level real hotel operational data and are excluded via `.gitignore`. Only the code and the resulting aggregate metric tables are published here. The "inventory" anomaly category is not represented in this set (no real stock-count substrate is available at this scope); it is instead represented in the simulated generalisation environment (Section 4.6).
+
+**Protocol robustness check.** `check_augmented_temporal.py` re-runs the augmented evaluation under a *temporal* hold-out instead of the stratified random split used for Table 4.3, to test whether the reported figures depend on the splitting protocol. Three variants: (A) the thesis protocol, stratified random 70/30; (B) temporal hold-out, train ≤ 14 Jun, test 15–28 Jun; (C) temporal hold-out with the z-score baseline recomputed on the training window only (no transductive leakage). F1 stays within 0.539–0.566 across all three, so the Table 4.3 result is not an artefact of random splitting. Results in `check_augmented_temporal.csv`.
+
+```bash
+AUGMENTED_CSV=./augmented_real_dataset.csv python3 check_augmented_temporal.py
+```
+
+### `anomaly-detection/nonaugmented/`
+
+The **direct evaluation on the unaugmented operational record** reported in Section 4.7.1 (Table 4.5). No synthetic perturbation is involved: the unit of analysis is a consumption line exactly as the POS proposed it, and the label is whether the manual review process subsequently corrected that line (`Quantidade Alterada` / `Referência Alterada` in the ERP differences report). The population is the full operational window, 12,246 lines, of which 281 were corrected — a base rate of 2.29%.
+
+The methodological point that distinguishes this from the two discarded attempts is that the **post-correction ERP quantity never enters as a feature**. For flagged lines the feature set is built from `Qtt host`, the pre-correction value; for unflagged lines host and ERP agree by definition. The evaluation script asserts this at runtime: no feature may correlate with the label above |r| = 0.5, and the script aborts if one does.
+
+Pipeline:
+```bash
+pip install scikit-learn numpy openpyxl
+export DATA_DIR=/path/to/local/exports    # not versioned — see "Note on inputs"
+python3 build_dataset.py                  # writes lines.json + dayvol.json (12,246 lines)
+python3 evaluate_nonaugmented_real.py     # Isolation Forest + autoencoder, temporal hold-out
+python3 robustness.py                     # permutation test, 10 random splits, feature importance
+```
+
+Reported result (Isolation Forest, temporal hold-out, test window 15–28 Jun 2026): **PR-AUC 0.063 against a 2.41% base rate — a lift of 2.61×**, with precision 0.076 (95% CI [0.034, 0.124]) and recall 0.101 (95% CI [0.048, 0.165]). A permutation test over 2,000 label shuffles gives *p* = 0.0005, so the lift is distinguishable from chance; over ten random splits the mean lift rises to 4.4×. The autoencoder baseline reaches a lift of 1.62×. See `results_nonaugmented.csv`.
+
+These figures are far below the augmented-set figures, and Section 4.7.1 reads them as such: detection on the raw operational record is well above chance but not yet operationally useful on its own. Permutation feature importance shows the signal is carried by line **value** rather than by the historical z-score — corrected lines have a median value of €6.84 against €0.70 for uncorrected ones — which the dissertation discusses as evidence of reviewer-attention bias in the labels rather than of a purely technical detection limit.
+
+**Note on inputs:** `build_dataset.py` reads three real ERP exports (consumption listing, banquet consumption detail, POS–ERP differences report) from `$DATA_DIR/01_DATA_CONSUMOS/`, and the feature builders read `$DATA_DIR/fichas_tecnicas_flat.csv` (produced by `data-crosscheck/`). None of these are versioned here — they carry row-level real hotel operational data and are excluded via `.gitignore`. Only the code and the aggregate metric tables are published.
+
+### `data-crosscheck/`
+
+`build_real_crosscheck.py` reconstructs theoretical consumption from POS sales by exploding each sold menu item through its recipe technical sheet (*ficha técnica*), and compares the result against the ERP's recorded consumption for the same window. This is the reconciliation described in Section 3.1.3, and it is what establishes that the differences report retains both the POS-proposed and the ERP-stored quantity for every record.
+
+```bash
+python3 build_real_crosscheck.py --outdir ./out
+```
+
+It writes `fichas_tecnicas_flat.csv` (the flattened recipe sheets, consumed by `anomaly-detection/nonaugmented/`) and `cruzamento_teorico_vs_erp.csv` (the line-by-line comparison). Both contain real article codes and quantities and are excluded via `.gitignore`.
 
 ### `chain-event-registration/`
 
@@ -84,4 +123,8 @@ node replay.js ../dlt-simulation/events.json --concurrency 10
 
 ## Reproducibility
 
-All scripts use fixed random seeds (`seed=42`). Running them in the order above (`anomaly-detection` -> `chain-event-registration` -> deploy `chaincode` -> `dlt-simulation` -> `replay-harness`) reproduces the figures reported in Chapter 4 and in the ICDLT 2026 paper.
+All scripts use fixed random seeds (`seed=42`). Running them in the order `data-crosscheck` -> `anomaly-detection` (augmented, then `nonaugmented/`) -> `chain-event-registration` -> deploy `chaincode` -> `dlt-simulation` -> `replay-harness` reproduces the figures reported in Chapter 4 and in the ICDLT 2026 paper.
+
+## Data access
+
+Every script that touches real operational data reads it from a location given by an environment variable (`DATA_DIR`, `AUGMENTED_CSV`) rather than a hard-coded path, and no such file is versioned here. The row-level exports are held under the dissertation's own data management arrangements and are available to the jury on request; the aggregate metric tables published in this repository are sufficient to verify every number reported in Chapter 4.
