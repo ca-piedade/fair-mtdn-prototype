@@ -1,6 +1,6 @@
-# Real, row-level hotel operational data must never be committed here,
-# even though this repository is currently private. Only aggregate result
-# tables (precision/recall/F1 summaries) are safe to publish.
+# Real, row-level hotel operational data must never be committed here.
+# This holds whether the repository is private or public: only aggregate
+# result tables (precision/recall/F1 summaries) are safe to publish.
 augmented_real_dataset.csv
 real_dataset.csv
 real_dataset_v2.csv
@@ -8,6 +8,8 @@ real_dataset_v2.csv
 mapping.csv
 mapping_privado*.csv
 node_modules/
+__pycache__/
+*.pyc
 
 # RQ2 chain-event-registration outputs: real article codes, quantities,
 # dates and z-scores per event -- generated locally by the scripts here,
@@ -15,3 +17,23 @@ node_modules/
 flagged_events_augmented.csv
 events_to_register.json
 invoke_register_events.sh
+
+# Direct (non-augmented) RQ1 evaluation, Section 4.7.1 -- the labelled
+# operational record and its intermediates carry real article codes,
+# quantities and dates for all 12,246 lines.
+dataset_nonaugmented_real.csv
+lines.json
+dayvol.json
+results_nonaugmented.json
+robustness.json
+
+# POS x recipe-sheet x ERP reconciliation, Section 3.1.3 -- real recipe
+# compositions, unit costs and line-level consumption.
+fichas_tecnicas_flat.csv
+cruzamento_teorico_vs_erp.csv
+
+# Local ERP exports, wherever DATA_DIR is pointed inside the working tree.
+data/
+01_DATA_CONSUMOS/
+02_DATA_FICHAS_TECNICAS/
+*.xlsx
