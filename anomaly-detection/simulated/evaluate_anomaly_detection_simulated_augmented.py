@@ -22,7 +22,7 @@ Outputs
 - Console: precision/recall/F1/confusion matrix, held-out test partition, for the
   masked set (Table 4.X figures) and, for reference only (not saved), the same
   pipeline on the unmasked version of the identical population.
-- Table4X_simulated_augmented_results.csv: masked-set results for Section 4.6.2.
+- table4_5_simulated_results.csv: masked-set results for Section 4.6.2 (Table 4.5).
 """
 
 import numpy as np
@@ -135,8 +135,8 @@ def main():
 
     results_masked = run_evaluation(df, condition="masked")
     out = pd.DataFrame(results_masked)
-    out.to_csv("Table4X_simulated_augmented_results.csv", index=False)
-    print("\nSaved Table4X_simulated_augmented_results.csv (masked, Section 4.6.2 figures).")
+    out.to_csv("table4_5_simulated_results.csv", index=False)
+    print("\nSaved table4_5_simulated_results.csv (masked, Section 4.6.2 figures).")
 
     print("\n--- Comparison only (not saved): same rows, masking undone (masked back to original perturbation) ---")
     df_unmasked = df.copy()
