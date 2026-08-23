@@ -7,7 +7,8 @@ Supplementary code referenced in **Annex D** of the dissertation (Carla Alexandr
 ```
 prototype/
 ├── anomaly-detection/          AI layer — RQ1 evaluation (Isolation Forest vs. Autoencoder)
-│   └── nonaugmented/           RQ1 direct evaluation on the unaugmented operational record (Section 4.5.1)
+│   ├── nonaugmented/           RQ1 direct evaluation on the unaugmented operational record (Section 4.5.1)
+│   └── simulated/              Generalisation check on a simulated, masked population (Section 4.6)
 ├── data-crosscheck/            POS × recipe-sheet × ERP reconciliation (Section 3.1.3)
 ├── chain-event-registration/   RQ2 — registers RQ1's flagged test-set events on Fabric
 ├── dlt-simulation/              DLT layer — throughput/volume simulation (ICDLT 2026 paper, Section 5)
@@ -58,6 +59,20 @@ Reported result (Isolation Forest, temporal hold-out, test window 15–28 Jun 20
 These figures are far below the augmented-set figures, and Section 4.5.1 reads them as such: detection on the raw operational record is well above chance but not yet operationally useful on its own. Permutation feature importance shows the signal is carried by line **value** rather than by the historical z-score — corrected lines have a median value of €6.84 against €0.70 for uncorrected ones — which the dissertation discusses as evidence of reviewer-attention bias in the labels rather than of a purely technical detection limit.
 
 **Note on inputs:** `build_dataset.py` reads three real ERP exports (consumption listing, banquet consumption detail, POS–ERP differences report) from `$DATA_DIR/01_DATA_CONSUMOS/`, and the feature builders read `$DATA_DIR/fichas_tecnicas_flat.csv` (produced by `data-crosscheck/`). None of these are versioned here — they carry row-level real hotel operational data and are excluded via `.gitignore`. Only the code and the aggregate metric tables are published.
+
+### `anomaly-detection/simulated/`
+
+The generalisation check reported in Section 4.6 (Table 4.5). The population here is neither real nor augmented-real: it is **generated from distributions calibrated on the real log** — per-article means and standard deviations learned from the operational data — and a share of the injected signal is then **masked**, reproducing the retention behaviour diagnosed in Section 3.1.3.
+
+The point of the exercise is comparability: the same single feature (`deviation_zscore_historical`) and the same train/test protocol as the augmented evaluation, so the three populations (real, augmented-real, simulated-masked) can be read side by side. Detection on the masked simulated population comes out close to random for both models (Isolation Forest precision 0.087, recall 0.085 at the contamination threshold), which is the point: it independently reproduces the signal-loss finding rather than demonstrating successful transfer.
+
+```bash
+export DATA_DIR=/path/to/local/exports        # holds real_dataset_v2.csv, not versioned
+python3 build_simulated_calibrated_dataset.py # learns calibration, writes the simulated population
+python3 evaluate_anomaly_detection_simulated_augmented.py
+```
+
+Results in `Table4X_simulated_augmented_results.csv` (the `4X` in the filename dates from when the table was still pending; it feeds Table 4.5). The generated population itself, `simulated_calibrated_dataset.csv`, is excluded via `.gitignore` because it carries per-article statistics learned from the real log.
 
 ### `data-crosscheck/`
 

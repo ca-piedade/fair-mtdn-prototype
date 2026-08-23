@@ -27,6 +27,11 @@ dayvol.json
 results_nonaugmented.json
 robustness.json
 
+# Simulated generalisation environment, Section 4.6 -- the generated population
+# carries per-article means and standard deviations learned from the real log.
+simulated_calibrated_dataset.csv
+real_dataset_v2.csv
+
 # POS x recipe-sheet x ERP reconciliation, Section 3.1.3 -- real recipe
 # compositions, unit costs and line-level consumption.
 fichas_tecnicas_flat.csv
