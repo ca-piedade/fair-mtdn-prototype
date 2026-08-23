@@ -7,23 +7,24 @@ Supplementary code referenced in **Annex D** of the dissertation (Carla Alexandr
 ```
 prototype/
 ├── anomaly-detection/          AI layer — RQ1 evaluation (Isolation Forest vs. Autoencoder)
-│   └── nonaugmented/           RQ1 direct evaluation on the unaugmented operational record (Section 4.7.1)
+│   └── nonaugmented/           RQ1 direct evaluation on the unaugmented operational record (Section 4.5.1)
 ├── data-crosscheck/            POS × recipe-sheet × ERP reconciliation (Section 3.1.3)
 ├── chain-event-registration/   RQ2 — registers RQ1's flagged test-set events on Fabric
 ├── dlt-simulation/              DLT layer — throughput/volume simulation (ICDLT 2026 paper, Section 5)
-├── chaincode/fnb-trust/         Hyperledger Fabric chaincode (StockLot + RecipeGovernance contracts)
+├── chaincode/fnb-trust/         Hyperledger Fabric chaincode of the artefact design (StockLot + RecipeGovernance)
+├── chaincode/anomaly-events/    Reduced PoC chaincode actually deployed for the RQ2 validation (Section 4.7)
 └── replay-harness/              Node.js harness to replay simulated events as real Fabric transactions
 ```
 
 ### `anomaly-detection/`
 
-The primary RQ1 evaluation (Table 4.3; Sections 3.1.3 / 4.5) runs on an **augmented real-data evaluation set**: the real substrate is 3,705 confirmed POS–ERP consumption discrepancies (real articles, real quantities), into which controlled, calibrated field-level perturbations are injected (isolated "consumption" anomalies and systematic per-article "recipe" anomalies), each grounded in that article's own real historical mean/std. Two earlier direct attempts to evaluate on the raw real discrepancy log were tried and discarded (circular labels; near-base-rate single-source features). A third, methodologically sound direct evaluation was subsequently built on the full operational record and **is** reported, in Section 4.7.1 — see [`anomaly-detection/nonaugmented/`](#anomaly-detectionnonaugmented) below. The augmented set remains the primary RQ1 evaluation (Section 4.7.2).
+The primary RQ1 evaluation (Table 4.2; Sections 3.1.3 / 4.5.2) runs on an **augmented real-data evaluation set**: the real substrate is 3,705 confirmed POS–ERP consumption discrepancies (real articles, real quantities), into which controlled, calibrated field-level perturbations are injected (isolated "consumption" anomalies and systematic per-article "recipe" anomalies), each grounded in that article's own real historical mean/std. Two earlier direct attempts to evaluate on the raw real discrepancy log were tried and discarded (circular labels; near-base-rate single-source features). A third, methodologically sound direct evaluation was subsequently built on the full operational record and **is** reported, in Section 4.5.1 — see [`anomaly-detection/nonaugmented/`](#anomaly-detectionnonaugmented) below. The augmented set remains the primary RQ1 evaluation (Section 4.5.2).
 
 Pipeline:
 ```bash
 pip install scikit-learn pandas numpy shap
 python3 build_augmented_real_dataset.py        # builds the real+injected evaluation set
-python3 evaluate_anomaly_detection_augmented.py  # single seed=42 split, feeds Table 4.3
+python3 evaluate_anomaly_detection_augmented.py  # single seed=42 split, feeds Table 4.2
 python3 evaluate_anomaly_detection_robustness.py # 10-split variance + per-category recall
 ```
 
@@ -31,7 +32,7 @@ Reported result (Isolation Forest, mean over 10 random splits): **precision 0.57
 
 **Note on inputs:** `build_augmented_real_dataset.py` requires two real source files (real consumption export + Fichas Técnicas export) that are **not included in this repository** — they contain row-level real hotel operational data and are excluded via `.gitignore`. Only the code and the resulting aggregate metric tables are published here. The "inventory" anomaly category is not represented in this set (no real stock-count substrate is available at this scope); it is instead represented in the simulated generalisation environment (Section 4.6).
 
-**Protocol robustness check.** `check_augmented_temporal.py` re-runs the augmented evaluation under a *temporal* hold-out instead of the stratified random split used for Table 4.3, to test whether the reported figures depend on the splitting protocol. Three variants: (A) the thesis protocol, stratified random 70/30; (B) temporal hold-out, train ≤ 14 Jun, test 15–28 Jun; (C) temporal hold-out with the z-score baseline recomputed on the training window only (no transductive leakage). F1 stays within 0.539–0.566 across all three, so the Table 4.3 result is not an artefact of random splitting. Results in `check_augmented_temporal.csv`.
+**Protocol robustness check.** `check_augmented_temporal.py` re-runs the augmented evaluation under a *temporal* hold-out instead of the stratified random split used for Table 4.2, to test whether the reported figures depend on the splitting protocol. Three variants: (A) the thesis protocol, stratified random 70/30; (B) temporal hold-out, train ≤ 14 Jun, test 15–28 Jun; (C) temporal hold-out with the z-score baseline recomputed on the training window only (no transductive leakage). F1 stays within 0.539–0.566 across all three, so the Table 4.2 result is not an artefact of random splitting. The strictest of the three variants is the one carried into Table 4.4. Results in `check_augmented_temporal.csv`.
 
 ```bash
 AUGMENTED_CSV=./augmented_real_dataset.csv python3 check_augmented_temporal.py
@@ -39,7 +40,7 @@ AUGMENTED_CSV=./augmented_real_dataset.csv python3 check_augmented_temporal.py
 
 ### `anomaly-detection/nonaugmented/`
 
-The **direct evaluation on the unaugmented operational record** reported in Section 4.7.1 (Table 4.5). No synthetic perturbation is involved: the unit of analysis is a consumption line exactly as the POS proposed it, and the label is whether the manual review process subsequently corrected that line (`Quantidade Alterada` / `Referência Alterada` in the ERP differences report). The population is the full operational window, 12,246 lines, of which 281 were corrected — a base rate of 2.29%.
+The **direct evaluation on the unaugmented operational record** reported in Section 4.5.1 (Table 4.4). No synthetic perturbation is involved: the unit of analysis is a consumption line exactly as the POS proposed it, and the label is whether the manual review process subsequently corrected that line (`Quantidade Alterada` / `Referência Alterada` in the ERP differences report). The population is the full operational window, 12,246 lines, of which 281 were corrected — a base rate of 2.29%.
 
 The methodological point that distinguishes this from the two discarded attempts is that the **post-correction ERP quantity never enters as a feature**. For flagged lines the feature set is built from `Qtt host`, the pre-correction value; for unflagged lines host and ERP agree by definition. The evaluation script asserts this at runtime: no feature may correlate with the label above |r| = 0.5, and the script aborts if one does.
 
@@ -54,7 +55,7 @@ python3 robustness.py                     # permutation test, 10 random splits, 
 
 Reported result (Isolation Forest, temporal hold-out, test window 15–28 Jun 2026): **PR-AUC 0.063 against a 2.41% base rate — a lift of 2.61×**, with precision 0.076 (95% CI [0.034, 0.124]) and recall 0.101 (95% CI [0.048, 0.165]). A permutation test over 2,000 label shuffles gives *p* = 0.0005, so the lift is distinguishable from chance; over ten random splits the mean lift rises to 4.4×. The autoencoder baseline reaches a lift of 1.62×. See `results_nonaugmented.csv`.
 
-These figures are far below the augmented-set figures, and Section 4.7.1 reads them as such: detection on the raw operational record is well above chance but not yet operationally useful on its own. Permutation feature importance shows the signal is carried by line **value** rather than by the historical z-score — corrected lines have a median value of €6.84 against €0.70 for uncorrected ones — which the dissertation discusses as evidence of reviewer-attention bias in the labels rather than of a purely technical detection limit.
+These figures are far below the augmented-set figures, and Section 4.5.1 reads them as such: detection on the raw operational record is well above chance but not yet operationally useful on its own. Permutation feature importance shows the signal is carried by line **value** rather than by the historical z-score — corrected lines have a median value of €6.84 against €0.70 for uncorrected ones — which the dissertation discusses as evidence of reviewer-attention bias in the labels rather than of a purely technical detection limit.
 
 **Note on inputs:** `build_dataset.py` reads three real ERP exports (consumption listing, banquet consumption detail, POS–ERP differences report) from `$DATA_DIR/01_DATA_CONSUMOS/`, and the feature builders read `$DATA_DIR/fichas_tecnicas_flat.csv` (produced by `data-crosscheck/`). None of these are versioned here — they carry row-level real hotel operational data and are excluded via `.gitignore`. Only the code and the aggregate metric tables are published.
 
@@ -70,7 +71,7 @@ It writes `fichas_tecnicas_flat.csv` (the flattened recipe sheets, consumed by `
 
 ### `chain-event-registration/`
 
-Bridges RQ1 and RQ2: registers on Hyperledger Fabric the exact same held-out test-set events that Isolation Forest flags in `anomaly-detection/evaluate_anomaly_detection_augmented.py` (Table 4.3), so the on-chain audit trail comes from the same reported predictions rather than a separate, uncontrolled sample.
+Bridges RQ1 and RQ2: registers on Hyperledger Fabric the exact same held-out test-set events that Isolation Forest flags in `anomaly-detection/evaluate_anomaly_detection_augmented.py` (Table 4.2), so the on-chain audit trail comes from the same reported predictions rather than a separate, uncontrolled sample.
 
 ```bash
 cd anomaly-detection && python3 evaluate_anomaly_detection_augmented.py   # if not already run
@@ -78,6 +79,8 @@ cd ../chain-event-registration
 python3 export_rq2_events_augmented.py      # reads ../anomaly-detection outputs, writes flagged_events_augmented.csv
 python3 register_events_augmented.py --max-events 15   # writes events_to_register.json + invoke_register_events.sh
 ```
+
+The generated `invoke_register_events.sh` targets the `anomalyevents` chaincode; deploy it first with `chaincode/anomaly-events/setup_test_network.sh`.
 
 **Note on outputs:** `flagged_events_augmented.csv`, `events_to_register.json`, and `invoke_register_events.sh` all carry real article codes, quantities, and dates per flagged event, and are excluded via `.gitignore` for the same reason as the raw evaluation data. Only the generating code is published here.
 
@@ -101,6 +104,22 @@ Hyperledger Fabric chaincode (Node.js, `fabric-contract-api`/`fabric-shim`) impl
 - `lib/recipeGovernanceContract.js` — recipe (ficha técnica) governance lifecycle and flagging.
 
 Deploy with the standard Hyperledger Fabric `test-network` (`fabric-samples`), channel `mychannel`, chaincode name `fnbtrust`.
+
+### `chaincode/anomaly-events/`
+
+The reduced proof-of-concept chaincode **actually deployed** for the blockchain validation reported in Section 4.7 and shown in Figures 4.1–4.4. Written in Go (`fabric-contract-api-go`), it implements a single `SmartContract` with four externally invoked functions — `RegisterEvent`, `GetEvent`, `GetEventsByArticle`, `GetAllEvents` — over an `AnomalyEvent` record (event id, article code, category, anomaly type, model source, score, timestamp, validator, payload hash, status, description).
+
+This is deliberately a **subset** of the fuller lot- and recipe-governance lifecycle in `chaincode/fnb-trust/`. Its purpose is to validate the two trust mechanisms that RQ2 turns on — multi-organisation endorsement, and immutable queryable storage — not to reproduce every function of the target design. Section 4.7.1 of the dissertation states this explicitly.
+
+`setup_test_network.sh` brings up the standard two-organisation Fabric test-network (downloading `fabric-samples` if absent), generates a minimal `go.mod` pinning `fabric-contract-api-go v1.2.2`, and deploys this chaincode to channel `mychannel` under the name `anomalyevents`.
+
+```bash
+cd chaincode/anomaly-events
+chmod +x setup_test_network.sh
+./setup_test_network.sh
+```
+
+The events submitted against it are the ones produced by `chain-event-registration/` — closing the chain from an Isolation Forest detection to a committed on-chain record.
 
 ### `replay-harness/`
 
