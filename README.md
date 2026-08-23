@@ -72,7 +72,7 @@ python3 build_simulated_calibrated_dataset.py # learns calibration, writes the s
 python3 evaluate_anomaly_detection_simulated_augmented.py
 ```
 
-Results in `Table4X_simulated_augmented_results.csv` (the `4X` in the filename dates from when the table was still pending; it feeds Table 4.5). The generated population itself, `simulated_calibrated_dataset.csv`, is excluded via `.gitignore` because it carries per-article statistics learned from the real log.
+Results in `table4_5_simulated_results.csv`. The generated population itself, `simulated_calibrated_dataset.csv`, is excluded via `.gitignore` because it carries per-article statistics learned from the real log.
 
 ### `data-crosscheck/`
 
