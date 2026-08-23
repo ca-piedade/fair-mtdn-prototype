@@ -1,0 +1,5 @@
+condition,model,threshold,partition,precision,recall,f1,TP,FP,FN,TN
+masked,Isolation Forest,contamination-based (default),test,0.087,0.085,0.086,25,262,268,3934
+masked,Isolation Forest,"best-F1 threshold (-0.142, selected on train)",test,0.066,0.997,0.124,292,4123,1,73
+masked,Autoencoder (MLP),contamination-based (default),test,0.097,0.096,0.096,28,260,265,3936
+masked,Autoencoder (MLP),"best-F1 threshold (1.001, selected on train)",test,0.067,0.949,0.125,278,3882,15,314
