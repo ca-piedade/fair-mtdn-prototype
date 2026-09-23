@@ -1,0 +1,22 @@
+Ground truth: 144 anomalous lots; pure recipe 93, pure consumption 49, co-occurring 2, stale articles with anomalous lots 27
+
+Perfect detection (Table 4.4 baseline)
+  flags TP 144.0  FP 0.0  -> baseline investigations 144.0
+  with governance: 27.0 ftFlagged reviews + 51.0 individual + 0.0 FP = 78.0
+  reduction mean 45.8%  (95% MC interval 45.8%-45.8%)
+
+Measured recall only (no false positives)
+  flags TP 95.4  FP 0.0  -> baseline investigations 95.4
+  with governance: 25.5 ftFlagged reviews + 33.8 individual + 0.0 FP = 59.3
+  reduction mean 37.8%  (95% MC interval 31.5%-43.6%)
+
+Measured operating point (R=0.663, P=0.454)
+  flags TP 95.4  FP 115.0  -> baseline investigations 210.4
+  with governance: 25.5 ftFlagged reviews + 33.8 individual + 115.0 FP = 174.2
+  reduction mean 17.2%  (95% MC interval 13.4%-21.0%)
+
+Sensitivity grid at the measured operating point (mean reduction, %):
+stale\trigger   0.50   0.70   0.90
+  0.05           9.4   13.9   17.6
+  0.10          13.1   17.2   21.3
+  0.15          16.7   20.4   24.3
