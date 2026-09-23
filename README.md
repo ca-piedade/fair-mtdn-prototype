@@ -103,11 +103,14 @@ The generated `invoke_register_events.sh` targets the `anomalyevents` chaincode;
 
 `simulation.py` is the domain-informed simulation behind the ICDLT 2026 paper's throughput/volume-reduction analysis (recipe-governance consolidation benefit). Explicitly documented in-file as a **simulation with assumed parameters**, not a benchmark of a deployed system.
 
+`simulation_measured_detector.py` re-runs the same scenario (same seed, same 144 anomalous lots) with the detector's measured operating point from Section 4.5.2 (recall 0.663, precision 0.454) instead of perfect detection, via 10,000 Monte Carlo draws of the detection step. It reproduces the 45.8% perfect-detection figure and reports 17.2% (95% interval 13.4%–21.0%) at the measured operating point, plus the sensitivity grid (9.4%–24.3%) — dissertation Table 4.4 (last row) and Section 4.8.3. Output saved in `simulation_measured_detector_output.txt`.
+
 `generate_events.py` reuses the same seed/scenario to emit the ordered sequence of real chaincode calls (`events.json`) needed to reproduce the scenario against a live Fabric network — this is the input consumed by `replay-harness/`.
 
 Run:
 ```bash
 python3 simulation.py
+python3 simulation_measured_detector.py
 python3 generate_events.py
 ```
 
