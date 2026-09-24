@@ -1,0 +1,7 @@
+train 9821 (661 anom) | test 5044 (356 anom, base rate 0.0706)
+Isolation Forest                   contamination (default)    P 0.454  R 0.663  F1 0.539  PR-AUC 0.400  flagged 520
+Isolation Forest                   best-F1 on train           P 0.471  R 0.654  F1 0.548  PR-AUC 0.400  flagged 495
+|z| rule                           contamination k=2.14       P 0.409  R 0.559  F1 0.473  PR-AUC 0.409  flagged 486
+|z| rule                           best-F1 on train k=2.34    P 0.423  R 0.525  F1 0.469  PR-AUC 0.409  flagged 442
+|z| rule                           fixed k=2                  P 0.385  R 0.596  F1 0.468  PR-AUC 0.409  flagged 550
+|z| rule                           fixed k=3                  P 0.479  R 0.444  F1 0.461  PR-AUC 0.409  flagged 330
