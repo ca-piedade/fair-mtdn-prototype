@@ -39,6 +39,12 @@ Reported result (Isolation Forest, mean over 10 random splits): **precision 0.57
 AUGMENTED_CSV=./augmented_real_dataset.csv python3 check_augmented_temporal.py
 ```
 
+**Non-ML baseline.** `baseline_zscore_same_protocol.py` compares Isolation Forest with a simple rule that flags a line when |z| exceeds k, under exactly the protocol of variant C above (same rows, temporal hold-out, z-score baseline from the training window, contamination-based threshold). It reproduces the primary Isolation Forest result (precision 0.454, recall 0.663, PR-AUC 0.400) and reports the rule at the same threshold rule (k = 2.14: precision 0.409, recall 0.559, PR-AUC 0.409) plus best-F1 and fixed k = 2 / 3 variants — dissertation Table 4.2 and Section 4.5.2. Results in `baseline_zscore_same_protocol_results.csv`.
+
+```bash
+AUGMENTED_CSV=./augmented_real_dataset.csv python3 baseline_zscore_same_protocol.py
+```
+
 ### `anomaly-detection/nonaugmented/`
 
 The **direct evaluation on the unaugmented operational record** reported in Section 4.5.1 (Table 4.4). No synthetic perturbation is involved: the unit of analysis is a consumption line exactly as the POS proposed it, and the label is whether the manual review process subsequently corrected that line (`Quantidade Alterada` / `Referência Alterada` in the ERP differences report). The population is the full operational window, 12,246 lines, of which 281 were corrected — a base rate of 2.29%.
