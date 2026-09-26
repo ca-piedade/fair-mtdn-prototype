@@ -1,0 +1,11 @@
+Files: 48 | observations: 19104 | articles: 1500
+Non-zero physical-versus-book differences: 961 (5.0%)
+Eligible (book != 0, >= 3 counts, std(rel) > 0.001): 311 articles, 1382 observations (913 with a real non-zero difference, kept as normal)
+Injected: 98 (69 isolated 3-6 sigma, 29 systematic 1.5-2.5 sigma), base rate 0.071
+
+Isolation Forest, 10 stratified 70/30 splits (held-out partition):
+                        precision        recall            f1        pr_auc       
+                             mean    std   mean    std   mean    std   mean    std
+threshold                                                                         
+best-F1 (train)             0.946  0.062  0.817  0.085  0.873  0.048  0.949  0.028
+contamination (default)     0.870  0.085  0.866  0.075  0.863  0.047  0.949  0.028

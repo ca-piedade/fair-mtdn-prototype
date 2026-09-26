@@ -1,0 +1,12 @@
+POS dish codes sold: 592 | linked to a technical sheet: 466 | theoretical ingredients: 584
+Comparable ingredients: 512 | median actual/theoretical: 0.991 | within +/-20%: 67.2%
+
+Cross-source check (ingredient x physical count; label = physical != book):
+  recipe deviation |ratio-1|                 n= 8569  r=+0.008  p=0.484
+  consumption volatility (historical SD)     n= 7374  r=+0.013  p=0.261
+
+Sensitivity (alternative specifications, not the reported ones):
+  recipe ratio (signed)                      n= 8569  r=+0.012  p=0.271
+  recipe log-ratio                           n= 8461  r=+0.047  p=1.81e-05
+  consumption SD of window quantities        n= 8149  r=+0.022  p=0.0447
+  consumption coefficient of variation       n= 8041  r=+0.080  p=6.6e-13
