@@ -19,7 +19,7 @@ prototype/
 
 ### `anomaly-detection/`
 
-The primary RQ1 evaluation (Table 4.2; Sections 3.1.3 / 4.5.2) runs on an **augmented real-data evaluation set**: the real substrate is 3,705 confirmed POS–ERP consumption discrepancies (real articles, real quantities), into which controlled, calibrated field-level perturbations are injected (isolated "consumption" anomalies and systematic per-article "recipe" anomalies), each grounded in that article's own real historical mean/std. Two earlier direct attempts to evaluate on the raw real discrepancy log were tried and discarded (circular labels; near-base-rate single-source features). A third, methodologically sound direct evaluation was subsequently built on the full operational record and **is** reported, in Section 4.5.1 — see [`anomaly-detection/nonaugmented/`](#anomaly-detectionnonaugmented) below. The augmented set remains the primary RQ1 evaluation (Section 4.5.2).
+The primary RQ1 evaluation (Table 4.2; Sections 3.1.3 / 4.5.2) runs on an **augmented real-data evaluation set**: the real substrate is 15,173 real consumption lines (client, internal/complimentary, and the 3,423 lines deleted at integration recorded in the POS–ERP differences report), of which 14,963 have a usable per-article baseline; controlled, calibrated field-level perturbations are injected into them (isolated "consumption" anomalies at 3–6σ on 5% of lines and systematic per-article "recipe" anomalies at 1.5–2.5σ on 5% of articles), each grounded in that article's own real historical mean/std. The anomaly rate (1,024 of 14,963, 6.8%) is a design choice, not an estimate from the real log. Two earlier direct attempts to evaluate on the raw real discrepancy log were tried and discarded (circular labels; near-base-rate single-source features). A third, methodologically sound direct evaluation was subsequently built on the full operational record and **is** reported, in Section 4.5.1 — see [`anomaly-detection/nonaugmented/`](#anomaly-detectionnonaugmented) below. The augmented set remains the primary RQ1 evaluation (Section 4.5.2).
 
 Pipeline:
 ```bash
@@ -33,7 +33,7 @@ Reported result (Isolation Forest, mean over 10 random splits): **precision 0.57
 
 **Note on inputs:** `build_augmented_real_dataset.py` requires two real source files (real consumption export + Fichas Técnicas export) that are **not included in this repository** — they contain row-level real hotel operational data and are excluded via `.gitignore`. Only the code and the resulting aggregate metric tables are published here. The "inventory" anomaly category is not represented in this set (no real stock-count substrate is available at this scope); it is instead represented in the simulated generalisation environment (Section 4.6).
 
-**Protocol robustness check.** `check_augmented_temporal.py` re-runs the augmented evaluation under a *temporal* hold-out instead of the stratified random split used for Table 4.2, to test whether the reported figures depend on the splitting protocol. Three variants: (A) the thesis protocol, stratified random 70/30; (B) temporal hold-out, train ≤ 14 Jun, test 15–28 Jun; (C) temporal hold-out with the z-score baseline recomputed on the training window only (no transductive leakage). F1 stays within 0.539–0.566 across all three, so the Table 4.2 result is not an artefact of random splitting. The strictest of the three variants is the one carried into Table 4.4. Results in `check_augmented_temporal.csv`.
+**Protocol robustness check.** `check_augmented_temporal.py` re-runs the augmented evaluation under a *temporal* hold-out instead of the stratified random split reported in Annex F (Table F.1), to test whether the reported figures depend on the splitting protocol. Three variants: (A) the thesis protocol, stratified random 70/30; (B) temporal hold-out, train ≤ 14 Jun, test 15–28 Jun; (C) temporal hold-out with the z-score baseline recomputed on the training window only (no transductive leakage). F1 stays within 0.539–0.566 across all three, so the result is not an artefact of random splitting. The strictest of the three variants (C) is the primary result reported in Table 4.2. Results in `check_augmented_temporal.csv`.
 
 ```bash
 AUGMENTED_CSV=./augmented_real_dataset.csv python3 check_augmented_temporal.py
@@ -43,6 +43,17 @@ AUGMENTED_CSV=./augmented_real_dataset.csv python3 check_augmented_temporal.py
 
 ```bash
 AUGMENTED_CSV=./augmented_real_dataset.csv python3 baseline_zscore_same_protocol.py
+```
+
+**Recipe and inventory extension (Section 4.5.3).** Two scripts reproduce the Section 4.5.3 checks from the raw exports (not included in the repository):
+
+- `recipe_inventory_crosscheck.py` explodes point-of-sale dish sales through the technical sheets (`fichas_tecnicas_flat.csv`) into theoretical ingredient consumption and compares it with actual ERP consumption (512 comparable ingredients, median actual/theoretical ratio 0.99, 67.2% within ±20%). It also tests, at ingredient × physical-count granularity, whether recipe deviation or consumption volatility correlates with the real inventory discrepancy label, and prints alternative specifications as a sensitivity check. Output in `recipe_inventory_crosscheck_output.txt`.
+- `inventory_reconciliation_detector.py` builds the inventory-reconciliation evaluation from the 48 physical-count files (19,104 observations; 961 non-zero physical-versus-book differences): relative discrepancy (physical − book)/book, articles with at least three counts and a non-null historical standard deviation (311 articles, 1,382 observations), controlled injection using the same 3–6σ / 1.5–2.5σ convention as the augmented set, and Isolation Forest over ten stratified 70/30 splits with a best-F1 threshold selected on the training partition. Because the injection is defined in units of the same variable the detector scores, recovery is close to circular by construction; the result is reported as preliminary. Output in `inventory_reconciliation_detector_output.txt` and `inventory_reconciliation_results.csv`.
+
+```bash
+python3 recipe_inventory_crosscheck.py --sales <POS sales xlsx> --recipes <fichas_tecnicas_flat.csv> \
+    --consumption <real_dataset_v2.csv> --inventory <folder with the 48 count files>
+python3 inventory_reconciliation_detector.py --data-dir <folder with the 48 count files>
 ```
 
 ### `anomaly-detection/nonaugmented/`
