@@ -1,4 +1,4 @@
-# Prototype Code — MTDN Dissertation "FAIR: Design and Prototype Evaluation of a Hybrid AI–Blockchain Artefact for Anomaly Screening and Auditability in Hospitality Food & Beverage Reporting"
+# README
 
 Supplementary code referenced in **Annex D** of the dissertation (Carla Alexandra Viveiros Piedade, ISCTE MTDN, September 2026). This repository contains the prototype components evaluated in Chapter 4. The same codebase produced the quantitative results in the companion manuscripts submitted to ICDLT 2026, JHTT, and Cornell Hospitality Quarterly. Row-level operational data are not in this repository.
 
