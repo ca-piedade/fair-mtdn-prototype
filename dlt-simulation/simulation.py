@@ -4,7 +4,7 @@ Simulation study for the ICDLT 2026 paper — Section 5 (Evaluation).
 IMPORTANT — honesty of framing:
 This is NOT a benchmark of a deployed system. It is a synthetic simulation with
 domain-informed parameters (documented below, chosen to be consistent with the
-"recipe gap" root cause identified in the dissertation's As-Is process analysis,
+"recipe gap" root cause identified in the project's As-Is process analysis,
 not measured from live production data). Its purpose is twofold:
 
   1. Quantify the operational benefit of the recipe-governance lifecycle
@@ -18,7 +18,7 @@ not measured from live production data). Its purpose is twofold:
      measurement (no Fabric deployment was performed).
 
 The simulation does NOT claim to evaluate AI detection accuracy (that is the
-dissertation's AI layer, out of scope for this DLT-focused paper) — anomaly
+project's AI layer, out of scope for this DLT-focused paper) — anomaly
 ground truth is generated directly, and the ledger's role being evaluated is
 deterministic event routing/consolidation, not statistical inference.
 
@@ -37,7 +37,7 @@ N_SECTIONS = 6                  # Kitchen, Bar, Restaurant, Banquets, Room Servi
 N_ARTICLES = 300                # distinct F&B articles tracked across the property
 LOTS_PER_MONTH = 250            # stock lots processed per month, all sections combined
 STALE_RECIPE_RATE = 0.10        # fraction of articles operating under a stale/incorrect
-                                 # ficha tecnica at simulation start (dissertation's
+                                 # ficha tecnica at simulation start (project's
                                  # "recipe gap" pain point; no measured baseline exists,
                                  # so a conservative round figure is assumed)
 CONSUMPTION_ANOMALY_RATE = 0.04 # baseline probability a lot shows a genuine consumption

@@ -1,6 +1,6 @@
 """
 Investigation-volume reduction under the MEASURED detector operating point
-(dissertation Section 4.8, Table 4.4 — added in response to supervisor review, 23 Sep 2026).
+(project Section 4.8, Table 4.4 — added in response to supervisor review, 23 Sep 2026).
 
 simulation.py assumes perfect detection: every one of the 144 anomalous lots is
 flagged and no false positives occur (45.8% reduction). This companion script keeps
