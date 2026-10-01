@@ -6,7 +6,7 @@ Resumo, Abstract, Section 5.1.1, Table 5.1, and Section 5.5 placeholders.
 Run build_augmented_real_dataset.py FIRST to produce augmented_real_dataset.csv, then
 run this script. Do not confuse this with:
   - evaluate_anomaly_detection_v2.py (superseded -- fully synthetic simulate_dataset(),
-    not the real-data-grounded set the thesis text now describes).
+    not the real-data-grounded set the project text now describes).
   - evaluate_anomaly_detection_simulated.py (Section 4.6, other-hotel generalisation,
     fully simulated with masking, not real-data-grounded by design).
 
@@ -162,7 +162,7 @@ def main():
     # requires more input dimensions than the middle layer, which does not apply
     # here). This is a small nonlinear reconstruction model over the 1-D distribution,
     # not a true undercomplete autoencoder -- reported for comparability with
-    # Isolation Forest per the dissertation's Objective 1, not because compression is
+    # Isolation Forest per the project's Objective 1, not because compression is
     # architecturally meaningful at 1 feature.
     ae = MLPRegressor(hidden_layer_sizes=(3,), activation="relu", max_iter=1000, random_state=RANDOM_SEED)
     ae.fit(X_train_scaled, X_train_scaled)

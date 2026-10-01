@@ -1,6 +1,6 @@
 """
 FAIR artefact - builds the AUGMENTED REAL-DATA evaluation set described in Section
-3.1.3 / Section 4.5 of the dissertation. This is the primary evaluation set for RQ1
+3.1.3 / Section 4.5 of the project. This is the primary evaluation set for RQ1
 (Table 4.3); do not confuse it with the fully synthetic simulate_dataset() used by
 evaluate_anomaly_detection_v2.py (superseded) or the masked generalisation set used
 by evaluate_anomaly_detection_simulated.py (Section 4.6).

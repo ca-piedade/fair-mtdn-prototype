@@ -1,6 +1,6 @@
 """
 FAIR artefact - inventory-reconciliation anomaly detector (Section 4.5.3 of the
-dissertation). Reconstructed on 26 Sep 2026 from the raw physical-count files so that
+project). Reconstructed on 26 Sep 2026 from the raw physical-count files so that
 the Section 4.5.3 figures can be reproduced; the original exploratory run (24 Aug 2026)
 was not saved as a script.
 
@@ -33,7 +33,7 @@ Design (same convention as build_augmented_real_dataset.py)
    threshold chosen as best-F1 on the TRAIN partition only (contamination-based
    threshold also reported). Metrics on the held-out partition.
 
-Caveat reported in the dissertation: the injection is defined in units of the same
+Caveat reported in the project: the injection is defined in units of the same
 variable the detector scores, so recovery is close to circular by construction.
 
 Run

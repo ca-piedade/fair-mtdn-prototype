@@ -1,6 +1,6 @@
 """
 FAIR artefact - recipe-versus-consumption reconciliation and cross-source
-correlation check (Section 4.5.3 of the dissertation). Reconstructed on 26 Sep 2026
+correlation check (Section 4.5.3 of the project). Reconstructed on 26 Sep 2026
 from the raw exports so that the Section 4.5.3 figures can be reproduced; the
 original exploratory run (24 Aug 2026) was not saved as a script.
 

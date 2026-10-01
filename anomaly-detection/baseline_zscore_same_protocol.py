@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """Baseline |z| > k versus Isolation Forest under EXACTLY the protocol that produced
-the thesis primary result (check_augmented_temporal.py, variant C: temporal hold-out,
+the project's primary result (check_augmented_temporal.py, variant C: temporal hold-out,
 train <= 14/06, test 15-28/06, z-score baseline recomputed on TRAIN only, same rows,
 IsolationForest n_estimators=200, contamination = train anomaly rate, seed 42).
 Supervisor review 23/09/2026, point 3. Replaces baseline_zscore_temporal.py, whose row
-filtering and best-F1 threshold made the IF row differ slightly from the thesis.
+filtering and best-F1 threshold made the IF row differ slightly from the project report.
 """
 import numpy as np, pandas as pd, datetime, os
 from sklearn.ensemble import IsolationForest
