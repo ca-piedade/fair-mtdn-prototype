@@ -1,6 +1,8 @@
-# README
+# FAIR — Prototype Code (ISCTE MTDN Project)
 
-Supplementary code referenced in **Annex D** of the dissertation (Carla Alexandra Viveiros Piedade, ISCTE MTDN, September 2026). This repository contains the prototype components evaluated in Chapter 4. The same codebase produced the quantitative results in the companion manuscripts submitted to ICDLT 2026, JHTT, and Cornell Hospitality Quarterly. Row-level operational data are not in this repository.
+*FAIR: Design and Prototype Evaluation of a Hybrid AI–Blockchain Artefact for Anomaly Screening and Auditability in Hospitality Food & Beverage Reporting*
+
+Supplementary code referenced in **Annex D** of the project (Carla Alexandra Viveiros Piedade, ISCTE MTDN, September 2026). This repository contains the prototype components evaluated in Chapter 4 (Demonstration, Validation, and Stakeholder Evaluation) and summarised in Annex D (Table D.1). The same codebase produced the quantitative results in the companion manuscripts submitted to ICDLT 2026, JHTT, and Cornell Hospitality Quarterly. Row-level operational data are not in this repository.
 
 ## Repository structure
 
@@ -11,7 +13,7 @@ prototype/
 │   └── simulated/              Generalisation check on a simulated, masked population (Section 4.6)
 ├── data-crosscheck/            POS × recipe-sheet × ERP reconciliation (Section 3.1.3)
 ├── chain-event-registration/   RQ2 — registers RQ1's flagged test-set events on Fabric
-├── dlt-simulation/              DLT layer — throughput/volume simulation (ICDLT 2026 paper, Section 5)
+├── dlt-simulation/              DLT layer — investigation-volume and throughput simulation (Section 4.8; ICDLT 2026 paper, Section 5)
 ├── chaincode/fnb-trust/         Hyperledger Fabric chaincode of the artefact design (StockLot + RecipeGovernance)
 ├── chaincode/anomaly-events/    Reduced PoC chaincode actually deployed for the RQ2 validation (Section 4.7)
 └── replay-harness/              Node.js harness to replay simulated events as real Fabric transactions
@@ -25,21 +27,21 @@ Pipeline:
 ```bash
 pip install scikit-learn pandas numpy shap
 python3 build_augmented_real_dataset.py        # builds the real+injected evaluation set
-python3 evaluate_anomaly_detection_augmented.py  # single seed=42 split, feeds Table 4.2
-python3 evaluate_anomaly_detection_robustness.py # 10-split variance + per-category recall
+python3 evaluate_anomaly_detection_augmented.py  # canonical seed=42 random split (robustness check, Annex F; source of the RQ2 events, Section 4.7.2)
+python3 evaluate_anomaly_detection_robustness.py # 10-split variance + per-category recall (Annex F, Tables F.1–F.2)
 ```
 
-Reported result (Isolation Forest, mean over 10 random splits): **precision 0.578 ± 0.029, recall 0.576 ± 0.029** — below the 0.80 target set in Chapter 1, but far above the near-random performance of the two discarded direct attempts. See `RQ1_augmented_results.csv` (canonical single-split figures), `robustness_variance_results.csv` (10-split mean/std), and `robustness_per_category_recall.csv` (recall by anomaly type).
+Primary reported result (Isolation Forest, temporal hold-out with the z-score baseline recomputed on the training window only — variant C below; Table 4.2): **precision 0.454, recall 0.663, PR-AUC 0.400**. Under the stratified random-split robustness check (Annex F, Table F.1), the mean over 10 random splits is precision 0.578 ± 0.029, recall 0.576 ± 0.029. Both are below the 0.80 target set in Chapter 1, but far above the near-random performance of the two discarded direct attempts. See `RQ1_augmented_results.csv` (canonical single-split figures), `robustness_variance_results.csv` (10-split mean/std), and `robustness_per_category_recall.csv` (recall by anomaly type).
 
 **Note on inputs:** `build_augmented_real_dataset.py` requires two real source files (real consumption export + Fichas Técnicas export) that are **not included in this repository** — they contain row-level real hotel operational data and are excluded via `.gitignore`. Only the code and the resulting aggregate metric tables are published here. The "inventory" anomaly category is not represented in this set (no real stock-count substrate is available at this scope); it is instead represented in the simulated generalisation environment (Section 4.6).
 
-**Protocol robustness check.** `check_augmented_temporal.py` re-runs the augmented evaluation under a *temporal* hold-out instead of the stratified random split reported in Annex F (Table F.1), to test whether the reported figures depend on the splitting protocol. Three variants: (A) the dissertation protocol, stratified random 70/30; (B) temporal hold-out, train ≤ 14 Jun, test 15–28 Jun; (C) temporal hold-out with the z-score baseline recomputed on the training window only (no transductive leakage). F1 stays within 0.539–0.566 across all three, so the result is not an artefact of random splitting. The strictest of the three variants (C) is the primary result reported in Table 4.2. Results in `check_augmented_temporal.csv`.
+**Protocol robustness check.** `check_augmented_temporal.py` re-runs the augmented evaluation under a *temporal* hold-out instead of the stratified random split reported in Annex F (Table F.1), to test whether the reported figures depend on the splitting protocol. Three variants: (A) stratified random 70/30, the robustness-check protocol of Annex F; (B) temporal hold-out, train ≤ 14 Jun, test 15–28 Jun; (C) temporal hold-out with the z-score baseline recomputed on the training window only (no transductive leakage). F1 stays within 0.539–0.566 across all three, so the result is not an artefact of random splitting. The strictest of the three variants (C) is the primary result reported in Table 4.2. Results in `check_augmented_temporal.csv`.
 
 ```bash
 AUGMENTED_CSV=./augmented_real_dataset.csv python3 check_augmented_temporal.py
 ```
 
-**Non-ML baseline.** `baseline_zscore_same_protocol.py` compares Isolation Forest with a simple rule that flags a line when |z| exceeds k, under exactly the protocol of variant C above (same rows, temporal hold-out, z-score baseline from the training window, contamination-based threshold). It reproduces the primary Isolation Forest result (precision 0.454, recall 0.663, PR-AUC 0.400) and reports the rule at the same threshold rule (k = 2.14: precision 0.409, recall 0.559, PR-AUC 0.409) plus best-F1 and fixed k = 2 / 3 variants — dissertation Table 4.2 and Section 4.5.2. Results in `baseline_zscore_same_protocol_results.csv`.
+**Non-ML baseline.** `baseline_zscore_same_protocol.py` compares Isolation Forest with a simple rule that flags a line when |z| exceeds k, under exactly the protocol of variant C above (same rows, temporal hold-out, z-score baseline from the training window, contamination-based threshold). It reproduces the primary Isolation Forest result (precision 0.454, recall 0.663, PR-AUC 0.400) and reports the rule at the same threshold rule (k = 2.14: precision 0.409, recall 0.559, PR-AUC 0.409) plus best-F1 and fixed k = 2 / 3 variants — Table 4.2 and Section 4.5.2 of the project. Results in `baseline_zscore_same_protocol_results.csv`.
 
 ```bash
 AUGMENTED_CSV=./augmented_real_dataset.csv python3 baseline_zscore_same_protocol.py
@@ -58,7 +60,7 @@ python3 inventory_reconciliation_detector.py --data-dir <folder with the 48 coun
 
 ### `anomaly-detection/nonaugmented/`
 
-The **direct evaluation on the unaugmented operational record** reported in Section 4.5.1 (Table 4.1). No synthetic perturbation is involved: the unit of analysis is a consumption line exactly as the POS proposed it, and the label is whether the manual review process subsequently corrected that line (`Quantidade Alterada` / `Referência Alterada` in the ERP differences report). The population is the full operational window, 12,246 lines, of which 281 were corrected — a base rate of 2.29%.
+The **direct evaluation on the unaugmented operational record** reported in Section 4.5.1 (Table 4.1, third attempt; Table 4.2, last row). No synthetic perturbation is involved: the unit of analysis is a consumption line exactly as the POS proposed it, and the label is whether the manual review process subsequently corrected that line (`Quantidade Alterada` / `Referência Alterada` in the ERP differences report). The population is the full operational window, 12,246 lines, of which 281 were corrected — a base rate of 2.29%.
 
 The methodological point that distinguishes this from the two discarded attempts is that the **post-correction ERP quantity never enters as a feature**. For flagged lines the feature set is built from `Qtt host`, the pre-correction value; for unflagged lines host and ERP agree by definition. The evaluation script asserts this at runtime: no feature may correlate with the label above |r| = 0.5, and the script aborts if one does.
 
@@ -73,7 +75,7 @@ python3 robustness.py                     # permutation test, 10 random splits, 
 
 Reported result (Isolation Forest, temporal hold-out, test window 15–28 Jun 2026): **PR-AUC 0.063 against a 2.41% base rate — a lift of 2.61×**, with precision 0.076 (95% CI [0.034, 0.124]) and recall 0.101 (95% CI [0.048, 0.165]). A permutation test over 2,000 label shuffles gives *p* = 0.0005, so the lift is distinguishable from chance; over ten random splits the mean lift rises to 4.4×. The autoencoder baseline reaches a lift of 1.62×. See `results_nonaugmented.csv`.
 
-These figures are far below the augmented-set figures, and Section 4.5.1 reads them as such: detection on the raw operational record is well above chance but not yet operationally useful on its own. Permutation feature importance shows the signal is carried by line **value** rather than by the historical z-score — corrected lines have a median value of €6.84 against €0.70 for uncorrected ones — which the dissertation discusses as evidence of reviewer-attention bias in the labels rather than of a purely technical detection limit.
+These figures are far below the augmented-set figures, and Section 4.5.1 reads them as such: detection on the raw operational record is well above chance but not yet operationally useful on its own. Permutation feature importance shows the signal is carried by line **value** rather than by the historical z-score — corrected lines have a median value of €6.84 against €0.70 for uncorrected ones — which the project discusses as evidence of reviewer-attention bias in the labels rather than of a purely technical detection limit.
 
 **Note on inputs:** `build_dataset.py` reads three real ERP exports (consumption listing, banquet consumption detail, POS–ERP differences report) from `$DATA_DIR/01_DATA_CONSUMOS/`, and the feature builders read `$DATA_DIR/fichas_tecnicas_flat.csv` (produced by `data-crosscheck/`). None of these are versioned here — they carry row-level real hotel operational data and are excluded via `.gitignore`. Only the code and the aggregate metric tables are published.
 
@@ -103,7 +105,7 @@ It writes `fichas_tecnicas_flat.csv` (the flattened recipe sheets, consumed by `
 
 ### `chain-event-registration/`
 
-Bridges RQ1 and RQ2: registers on Hyperledger Fabric the exact same held-out test-set events that Isolation Forest flags in `anomaly-detection/evaluate_anomaly_detection_augmented.py` (Table 4.2), so the on-chain audit trail comes from the same reported predictions rather than a separate, uncontrolled sample.
+Bridges RQ1 and RQ2: registers on Hyperledger Fabric the exact same held-out test-set events that Isolation Forest flags in `anomaly-detection/evaluate_anomaly_detection_augmented.py` (canonical seed=42 random split, 372 of 4,489 held-out lines; Section 4.7.2 and Annex F), so the on-chain audit trail comes from the same reported predictions rather than a separate, uncontrolled sample.
 
 ```bash
 cd anomaly-detection && python3 evaluate_anomaly_detection_augmented.py   # if not already run
@@ -120,7 +122,9 @@ The generated `invoke_register_events.sh` targets the `anomalyevents` chaincode;
 
 `simulation.py` is the domain-informed simulation behind the ICDLT 2026 paper's throughput/volume-reduction analysis (recipe-governance consolidation benefit). Explicitly documented in-file as a **simulation with assumed parameters**, not a benchmark of a deployed system.
 
-`simulation_measured_detector.py` re-runs the same scenario (same seed, same 144 anomalous lots) with the detector's measured operating point from Section 4.5.2 (recall 0.663, precision 0.454) instead of perfect detection, via 10,000 Monte Carlo draws of the detection step. It reproduces the 45.8% perfect-detection figure and reports 17.2% (95% interval 13.4%–21.0%) at the measured operating point, plus the sensitivity grid (9.4%–24.3%) — dissertation Table 4.4 (last row) and Section 4.8.3. Output saved in `simulation_measured_detector_output.txt`.
+`simulation_measured_detector.py` re-runs the same scenario (same seed, same 144 anomalous lots) with the detector's measured operating point from Section 4.5.2 (recall 0.663, precision 0.454) instead of perfect detection, via 10,000 Monte Carlo draws of the detection step. It reproduces the 45.8% perfect-detection figure and reports 17.2% (95% interval 13.4%–21.0%) at the measured operating point, plus the sensitivity grid (9.4%–24.3%) — Table 4.4 (last row) and Section 4.8.3 of the project. Output saved in `simulation_measured_detector_output.txt`.
+
+`sensitivity.py` re-runs the perfect-detection scenario over a 3×3 grid of stale-recipe rate (5/10/15%) and trigger rate (50/70/90%), reproducing Table 4.5 (26.1%–62.0%; centre cell 45.8%, Table 4.4) — Section 4.8.3.
 
 `generate_events.py` reuses the same seed/scenario to emit the ordered sequence of real chaincode calls (`events.json`) needed to reproduce the scenario against a live Fabric network — this is the input consumed by `replay-harness/`.
 
@@ -128,12 +132,13 @@ Run:
 ```bash
 python3 simulation.py
 python3 simulation_measured_detector.py
+python3 sensitivity.py
 python3 generate_events.py
 ```
 
 ### `chaincode/fnb-trust/`
 
-Hyperledger Fabric chaincode (Node.js, `fabric-contract-api`/`fabric-shim`) implementing the two smart contracts described in the dissertation's design (Chapter 3) and the ICDLT paper (Tables I & II):
+Hyperledger Fabric chaincode (Node.js, `fabric-contract-api`/`fabric-shim`) implementing the two smart contracts described in the project's design (Section 3.3.4, Table 3.5) and the ICDLT paper (Tables I & II):
 
 - `lib/stockLotContract.js` — stock-lot registration, receipt validation, allocation.
 - `lib/recipeGovernanceContract.js` — recipe (ficha técnica) governance lifecycle and flagging.
@@ -144,7 +149,7 @@ Deploy with the standard Hyperledger Fabric `test-network` (`fabric-samples`), c
 
 The reduced proof-of-concept chaincode **actually deployed** for the blockchain validation reported in Section 4.7 and shown in Figures 4.1–4.4. Written in Go (`fabric-contract-api-go`), it implements a single `SmartContract` with four externally invoked functions — `RegisterEvent`, `GetEvent`, `GetEventsByArticle`, `GetAllEvents` — over an `AnomalyEvent` record (event id, article code, category, anomaly type, model source, score, timestamp, validator, payload hash, status, description).
 
-This is deliberately a **subset** of the fuller lot- and recipe-governance lifecycle in `chaincode/fnb-trust/`. Its purpose is to validate the two trust mechanisms that RQ2 turns on — multi-organisation endorsement, and immutable queryable storage — not to reproduce every function of the target design. Section 4.7.1 of the dissertation states this explicitly.
+This is deliberately a **subset** of the fuller lot- and recipe-governance lifecycle in `chaincode/fnb-trust/`. Its purpose is to validate the two trust mechanisms that RQ2 turns on — multi-organisation endorsement, and immutable queryable storage — not to reproduce every function of the target design. Section 4.7.1 of the project states this explicitly.
 
 `setup_test_network.sh` brings up the standard two-organisation Fabric test-network (downloading `fabric-samples` if absent), generates a minimal `go.mod` pinning `fabric-contract-api-go v1.2.2`, and deploys this chaincode to channel `mychannel` under the name `anomalyevents`.
 
@@ -181,4 +186,4 @@ All scripts use fixed random seeds (`seed=42`). Running them in the order `data-
 
 ## Data access
 
-Every script that touches real operational data reads it from a location given by an environment variable (`DATA_DIR`, `AUGMENTED_CSV`) rather than a hard-coded path, and no such file is versioned here. The row-level exports are held under the dissertation's own data management arrangements and are available to the jury on request; the aggregate metric tables published in this repository are sufficient to verify every number reported in Chapter 4.
+Every script that touches real operational data reads it from a location given by an environment variable (`DATA_DIR`, `AUGMENTED_CSV`) rather than a hard-coded path, and no such file is versioned here. The row-level exports are held under the project's own data management arrangements and are available to the jury on request; the aggregate metric tables published in this repository are sufficient to verify every number reported in Chapter 4.
