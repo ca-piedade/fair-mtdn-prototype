@@ -11,7 +11,7 @@ not a separate, uncontrolled sample.
 Exports every row the Isolation Forest (best-F1 threshold) flags as anomalous
 on the held-out test partition -- this mirrors a real deployment, where the
 system does not know the true label at flagging time. The true label and
-anomaly_type are kept in the output for our own audit trail (thesis
+anomaly_type are kept in the output for our own audit trail (project
 narrative), not because the chaincode consumes them as ground truth.
 
 Run
